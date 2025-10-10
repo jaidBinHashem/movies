@@ -155,4 +155,8 @@ export const useMoviesStore = create<MoviesStore>((set, get) => ({
       isSearching: false,
     });
   },
+
+  clearSelectedMovie: () => {
+    set({ selectedMovie: null });
+  },
 }));

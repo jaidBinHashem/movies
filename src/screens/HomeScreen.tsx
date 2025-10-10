@@ -15,12 +15,11 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  FadeInDown,
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-} from 'react-native-reanimated';
-
-import { useMoviesStore } from '../store/moviesStore';
+import { COLORS } from '../const/colors';
+import { useMoviesData } from '../hooks/useMoviesData';
+import { useMoviesActions } from '../hooks/useMoviesActions';
 import MovieItem from '../components/MovieItem';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Footer from '../components/Footer';
@@ -40,28 +39,24 @@ interface HomeScreenProps {
 const DEFAULT_HEADER_HEIGHT = Platform.select({ ios: 88, android: 64 }) || 80;
 
 const HomeScreen: FC<HomeScreenProps> = memo(({ navigation }) => {
-  const movies = useMoviesStore(state => state.searchedMovies);
-  const loading = useMoviesStore(state => state.loading);
-  const loadingMore = useMoviesStore(state => state.loadingMore);
-  const error = useMoviesStore(state => state.error);
-  const hasMoreMovies = useMoviesStore(state => state.hasMoreMovies);
-  const isSearching = useMoviesStore(state => state.isSearching);
-  const searchQuery = useMoviesStore(state => state.searchQuery);
+  const {
+    movies,
+    loading,
+    loadingMore,
+    error,
+    hasMoreMovies,
+    isSearching,
+    searchQuery,
+  } = useMoviesData();
 
-  const fetchMovies = useMoviesStore(state => state.fetchMovies);
-  const searchMovies = useMoviesStore(state => state.searchMovies);
-  const loadMoreMovies = useMoviesStore(state => state.loadMoreMovies);
-  const clearError = useMoviesStore(state => state.clearError);
+  const { fetchMovies, searchMovies, loadMoreMovies, clearError } = useMoviesActions();
 
   const [refreshing, setRefreshing] = useState(false);
 
   const flatListRef = useRef<Animated.FlatList<Movie> | null>(null);
 
-  const { headerAnimatedStyle, onScroll, setHeaderHeightFromJS, freezeDuring } =
+  const { headerAnimatedStyle, onScroll, setHeaderHeightFromJS, freezeDuring, headerHeightJS } =
     useHeaderAnimation(DEFAULT_HEADER_HEIGHT);
-  const [headerHeight, setheaderHeight] = useState<number>(
-    DEFAULT_HEADER_HEIGHT,
-  );
 
   useEffect(() => {
     fetchMovies();
@@ -76,13 +71,12 @@ const HomeScreen: FC<HomeScreenProps> = memo(({ navigation }) => {
   useEffect(() => {
     freezeDuring(!!loadingMore);
     if (loadingMore) {
-      setHeaderHeightFromJS(headerHeight);
+      setHeaderHeightFromJS(headerHeightJS);
     }
-  }, [loadingMore, freezeDuring, headerHeight, setHeaderHeightFromJS]);
+  }, [loadingMore, freezeDuring, setHeaderHeightFromJS, headerHeightJS]);
 
   const handleHeaderMeasured = useCallback(
     (h: number) => {
-      setheaderHeight(h);
       setHeaderHeightFromJS(h);
     },
     [setHeaderHeightFromJS],
@@ -118,7 +112,7 @@ const HomeScreen: FC<HomeScreenProps> = memo(({ navigation }) => {
     [handleMoviePress],
   );
 
-  const keyExtractor = useCallback(
+    const keyExtractor = useCallback(
     (item: Movie, index: number) => `${item.id}-${index}`,
     [],
   );
@@ -170,7 +164,7 @@ const HomeScreen: FC<HomeScreenProps> = memo(({ navigation }) => {
         style={[
           styles.headerOverlay,
           headerAnimatedStyle,
-          { height: headerHeight },
+          { height: headerHeightJS },
         ]}
         pointerEvents="box-none"
       >
@@ -187,18 +181,18 @@ const HomeScreen: FC<HomeScreenProps> = memo(({ navigation }) => {
         keyExtractor={keyExtractor}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        ListHeaderComponent={<HeaderSpacer height={headerHeight} />}
+        ListHeaderComponent={<HeaderSpacer height={headerHeightJS} />}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#007AFF']}
-            tintColor="#007AFF"
-            progressViewOffset={headerHeight}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+            progressViewOffset={headerHeightJS}
           />
         }
         contentInset={{ top: 0 }}
-        scrollIndicatorInsets={{ top: headerHeight }}
+        scrollIndicatorInsets={{ top: headerHeightJS }}
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
         contentContainerStyle={styles.listContainer}

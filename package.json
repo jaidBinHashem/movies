@@ -4,7 +4,14 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "android:build": "cd android && ./gradlew assembleRelease",
+    "android:build-debug": "cd android && ./gradlew assembleDebug",
+    "android:clean": "cd android && ./gradlew clean",
+    "android:bundle": "cd android && ./gradlew bundleRelease",
     "ios": "react-native run-ios",
+    "ios:clean": "cd ios && xcodebuild clean && rm -rf ~/Library/Developer/Xcode/DerivedData/*",
+    "ios:pods": "cd ios && pod install",
+    "ios:pods-clean": "cd ios && rm -rf Pods && rm Podfile.lock && pod install",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

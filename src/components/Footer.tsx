@@ -1,5 +1,6 @@
 import React, { FC, memo } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import { COLORS } from '../const/colors';
 
 interface FooterProps {
   loading: boolean;
@@ -19,7 +20,7 @@ const Footer: FC<FooterProps> = memo(({ loading, hasMore, numberOfMovies }) => {
   if (loading) {
     return (
       <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#007AFF" />
+        <ActivityIndicator size="small" color={COLORS.primary} />
         <Text style={styles.footerText}>Loading more movies...</Text>
       </View>
     );

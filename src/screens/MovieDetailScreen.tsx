@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMoviesStore } from '../store/moviesStore';
+import { useMoviesCleanup } from '../hooks/useMoviesActions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { COLORS } from '../const/colors';
 
 type MovieDetailScreenProps = StackScreenProps<
   RootStackParamList,
@@ -27,6 +29,8 @@ const MovieDetailScreen: FC<MovieDetailScreenProps> = ({
   const { movieId } = route.params;
   const { selectedMovie, loading, error, fetchMovieById, clearError } =
     useMoviesStore();
+
+  useMoviesCleanup();
 
   useEffect(() => {
     fetchMovieById(movieId);
@@ -55,10 +59,7 @@ const MovieDetailScreen: FC<MovieDetailScreenProps> = ({
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Movie not found</Text>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={goBack}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={goBack}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,

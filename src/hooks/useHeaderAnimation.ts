@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { useState } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -9,6 +10,7 @@ import {
 
 type UseHeaderAnimationReturn = {
   headerHeight: SharedValue<number>;
+  headerHeightJS: number;
   headerAnimatedStyle: ReturnType<typeof useAnimatedStyle>;
   onScroll: (args: any) => void;
   setHeaderHeightFromJS: (h: number) => void;
@@ -19,12 +21,14 @@ export function useHeaderAnimation(
   defaultHeight = Platform.select({ ios: 88, android: 64 }) || 80,
 ): UseHeaderAnimationReturn {
   const headerHeight = useSharedValue<number>(defaultHeight);
+  const [headerHeightJS, setHeaderHeightJS] = useState<number>(defaultHeight);
   const prevY = useSharedValue(0);
   const offset = useSharedValue(0);
   const freeze = useSharedValue(false);
 
   const setHeaderHeightFromJS = (h: number) => {
     headerHeight.value = h;
+    setHeaderHeightJS(h);
     offset.value = Math.min(Math.max(offset.value, 0), h);
   };
 
@@ -79,6 +83,7 @@ export function useHeaderAnimation(
 
   return {
     headerHeight,
+    headerHeightJS,
     headerAnimatedStyle,
     onScroll,
     setHeaderHeightFromJS,

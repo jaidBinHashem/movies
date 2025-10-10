@@ -42,4 +42,5 @@ export interface MoviesActions {
   setSearchQuery: (query: string) => void;
   clearError: () => void;
   resetMovies: () => void;
+  clearSelectedMovie: () => void;
 }

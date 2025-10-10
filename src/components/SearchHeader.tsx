@@ -5,7 +5,6 @@ import React, {
   memo,
   RefObject,
   useRef,
-  FC,
 } from 'react';
 import {
   View,
@@ -25,6 +24,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { useDebounce } from '../hooks/useDebounce';
+import { COLORS } from '../const/colors';
 import { useMoviesStore } from '../store/moviesStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Movie } from '../types/Movie';
@@ -34,8 +34,8 @@ interface SearchHeaderProps {
   onHeightMeasured?: (height: number) => void;
 }
 
-const SearchHeader: FC<SearchHeaderProps> = memo(
-  ({ flatListRef, onHeightMeasured }) => {
+const SearchHeader = memo(
+  ({ flatListRef, onHeightMeasured }: SearchHeaderProps) => {
     const [searchQuery, setSearchQuery] = useState('');
     const insets = useSafeAreaInsets();
 
@@ -58,12 +58,15 @@ const SearchHeader: FC<SearchHeaderProps> = memo(
       }
     }, [debouncedSearchQuery, flatListRef]);
 
+    useEffect(() => {
+      const shouldShow = searchQuery.length > 0 && !isSearching && searchQuery === debouncedSearchQuery;
+      clearButtonOpacity.value = withTiming(shouldShow ? 1 : 0, { duration: 200 });
+    }, [isSearching, searchQuery.length, clearButtonOpacity, searchQuery, debouncedSearchQuery]);
+
     const handleTextChange = useCallback(
       (text: string) => {
         setSearchQuery(text);
-        clearButtonOpacity.value = withTiming(text.length > 0 ? 1 : 0, {
-          duration: 200,
-        });
+        clearButtonOpacity.value = withTiming(0, { duration: 200 });
       },
       [clearButtonOpacity],
     );
@@ -131,7 +134,7 @@ const SearchHeader: FC<SearchHeaderProps> = memo(
           {isSearching && (
             <ActivityIndicator
               size="small"
-              color="#007AFF"
+              color={COLORS.primary}
               style={styles.searchIndicator}
             />
           )}

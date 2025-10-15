@@ -1,13 +1,14 @@
-import React, { FC, memo, useCallback } from 'react';
+import React, { memo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Movie } from '../types/Movie';
+import { COLORS } from '../const/colors';
 
 interface MovieItemProps {
   movie: Movie;
   onPress: (movie: Movie) => void;
 }
 
-const MovieItem: FC<MovieItemProps> = memo(({ movie, onPress }) => {
+const MovieItem = memo(({ movie, onPress }: MovieItemProps) => {
   const handlePress = useCallback(() => {
     onPress(movie);
   }, [movie, onPress]);
@@ -50,11 +51,11 @@ MovieItem.displayName = 'MovieItem';
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 16,
     marginVertical: 4,
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -74,17 +75,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.onBackground,
     marginBottom: 4,
   },
   year: {
     fontSize: 14,
-    color: '#666',
+    color: COLORS.onSurface,
     marginBottom: 4,
   },
   director: {
     fontSize: 14,
-    color: '#888',
+    color: COLORS.onSurfaceVariant,
     marginBottom: 8,
   },
   ratingContainer: {
@@ -94,12 +95,12 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: COLORS.accent,
     fontWeight: '600',
   },
   genre: {
     fontSize: 12,
-    color: '#999',
+    color: COLORS.placeholder,
     flex: 1,
     textAlign: 'right',
   },

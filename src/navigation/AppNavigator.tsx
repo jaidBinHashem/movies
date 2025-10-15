@@ -1,8 +1,9 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import MovieDetailScreen from '../screens/MovieDetailScreen';
+import { COLORS } from '../const/colors';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -11,16 +12,16 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const AppNavigator: FC = () => {
+const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#fff',
+            backgroundColor: COLORS.surface,
           },
-          headerTintColor: '#000',
+          headerTintColor: COLORS.onBackground,
           headerTitleStyle: {
             fontWeight: 'bold',
           },

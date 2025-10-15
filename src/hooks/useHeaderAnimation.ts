@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -7,6 +7,8 @@ import {
   withTiming,
   SharedValue,
 } from 'react-native-reanimated';
+import { useMoviesData } from './useMoviesData';
+import { SPACING, ANIMATION, LAYOUT } from '../const';
 
 type UseHeaderAnimationReturn = {
   headerHeight: SharedValue<number>;
@@ -14,66 +16,71 @@ type UseHeaderAnimationReturn = {
   headerAnimatedStyle: ReturnType<typeof useAnimatedStyle>;
   onScroll: (args: any) => void;
   setHeaderHeightFromJS: (h: number) => void;
-  freezeDuring: (flag: boolean) => void;
 };
 
 export function useHeaderAnimation(
-  defaultHeight = Platform.select({ ios: 88, android: 64 }) || 80,
+  defaultHeight = Platform.select({ ios: SPACING.headerHeightIOS, android: SPACING.headerHeightAndroid }) || SPACING.headerHeight,
 ): UseHeaderAnimationReturn {
+  const { loadingMore } = useMoviesData();
   const headerHeight = useSharedValue<number>(defaultHeight);
   const [headerHeightJS, setHeaderHeightJS] = useState<number>(defaultHeight);
   const prevY = useSharedValue(0);
   const offset = useSharedValue(0);
   const freeze = useSharedValue(false);
 
-  const setHeaderHeightFromJS = (h: number) => {
+  const setHeaderHeightFromJS = useCallback((h: number) => {
     headerHeight.value = h;
     setHeaderHeightJS(h);
     offset.value = Math.min(Math.max(offset.value, 0), h);
-  };
+  }, [headerHeight, offset]);
 
-  const freezeDuring = (flag: boolean) => {
+  const freezeDuring = useCallback((flag: boolean) => {
     freeze.value = flag;
+  }, [freeze]);
+
+  // Handle header freezing during loading more movies
+  useEffect(() => {
+    freezeDuring(!!loadingMore);
+    if (loadingMore) {
+      setHeaderHeightFromJS(headerHeightJS);
+    }
+  }, [loadingMore, headerHeightJS, freezeDuring, setHeaderHeightFromJS]);
+
+  const snapHeaderToPosition = () => {
+    'worklet';
+    if (freeze.value || !headerHeight.value) return;
+    
+    const midpoint = headerHeight.value / LAYOUT.scrollDivider;
+    const targetOffset = offset.value > midpoint ? headerHeight.value : 0;
+    
+    offset.value = withTiming(targetOffset, { duration: ANIMATION.normal });
   };
 
   const onScroll = useAnimatedScrollHandler({
     onBeginDrag: e => {
-      if (freeze.value) {
-        prevY.value = Math.max(0, e.contentOffset.y);
-        return;
-      }
-      prevY.value = Math.max(0, e.contentOffset.y);
+      const clampedY = Math.max(LAYOUT.zeroOffset, e.contentOffset.y);
+      prevY.value = clampedY;
     },
     onScroll: e => {
       if (freeze.value) return;
-      const y = Math.max(0, e.contentOffset.y);
+      
+      const y = Math.max(LAYOUT.zeroOffset, e.contentOffset.y);
       const dy = y - prevY.value;
       prevY.value = y;
 
       const next = offset.value + dy;
-      offset.value = Math.min(Math.max(next, 0), headerHeight.value || 0);
+      offset.value = Math.min(Math.max(next, LAYOUT.zeroOffset), headerHeight.value || LAYOUT.zeroOffset);
 
-      if (y <= 0 && headerHeight.value > 0) {
-        offset.value = 0;
+      // Reset offset when scrolled to top
+      if (y <= LAYOUT.zeroOffset && headerHeight.value > LAYOUT.zeroOffset) {
+        offset.value = LAYOUT.zeroOffset;
       }
     },
     onEndDrag: () => {
-      if (freeze.value) return;
-      if (!headerHeight.value) return;
-      const midpoint = headerHeight.value / 2;
-      offset.value = withTiming(
-        offset.value > midpoint ? headerHeight.value : 0,
-        { duration: 160 },
-      );
+      snapHeaderToPosition();
     },
     onMomentumEnd: () => {
-      if (freeze.value) return;
-      if (!headerHeight.value) return;
-      const midpoint = headerHeight.value / 2;
-      offset.value = withTiming(
-        offset.value > midpoint ? headerHeight.value : 0,
-        { duration: 160 },
-      );
+      snapHeaderToPosition();
     },
   });
 
@@ -87,6 +94,5 @@ export function useHeaderAnimation(
     headerAnimatedStyle,
     onScroll,
     setHeaderHeightFromJS,
-    freezeDuring,
   };
 }

@@ -1,6 +1,8 @@
-import React, { FC, memo } from 'react';
+import React, { memo } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../const/colors';
+import { SPACING, TYPOGRAPHY } from '../const';
+import { LOADING_MESSAGES, UI_TEXT } from '../const/strings';
 
 interface FooterProps {
   loading: boolean;
@@ -8,11 +10,11 @@ interface FooterProps {
   numberOfMovies: number;
 }
 
-const Footer: FC<FooterProps> = memo(({ loading, hasMore, numberOfMovies }) => {
+const Footer = memo(({ loading, hasMore, numberOfMovies }: FooterProps) => {
   if (!loading && !hasMore && numberOfMovies > 0) {
     return (
       <View style={styles.footer}>
-        <Text style={styles.footerText}>No more movies to load</Text>
+        <Text style={styles.footerText}>{UI_TEXT.NO_MORE_MOVIES}</Text>
       </View>
     );
   }
@@ -21,7 +23,7 @@ const Footer: FC<FooterProps> = memo(({ loading, hasMore, numberOfMovies }) => {
     return (
       <View style={styles.footer}>
         <ActivityIndicator size="small" color={COLORS.primary} />
-        <Text style={styles.footerText}>Loading more movies...</Text>
+        <Text style={styles.footerText}>{LOADING_MESSAGES.MORE_MOVIES}</Text>
       </View>
     );
   }
@@ -33,14 +35,14 @@ Footer.displayName = 'Footer';
 
 const styles = StyleSheet.create({
   footer: {
-    padding: 20,
+    padding: SPACING.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   footerText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#666',
+    marginTop: SPACING.sm,
+    fontSize: TYPOGRAPHY.caption,
+    color: COLORS.onSurface,
     textAlign: 'center',
   },
 });

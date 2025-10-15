@@ -1,4 +1,4 @@
-import React, { FC, memo } from 'react';
+import React, { memo } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../const/colors';
 
@@ -8,8 +8,8 @@ interface LoadingSpinnerProps {
   color?: string;
 }
 
-const LoadingSpinner: FC<LoadingSpinnerProps> = memo(
-  ({ message = 'Loading...', size = 'large', color = COLORS.primary }) => {
+const LoadingSpinner = memo(
+  ({ message = 'Loading...', size = 'large', color = COLORS.primary }: LoadingSpinnerProps) => {
     return (
       <View style={styles.container}>
         <ActivityIndicator size={size} color={color} />
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: COLORS.onSurface,
     textAlign: 'center',
   },
 });

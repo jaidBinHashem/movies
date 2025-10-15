@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
 // TMDb API Configuration
-const TMDB_API_KEY = 'YOUR_TMDB_API'; // this should be stored securely in env variables
+const TMDB_API_KEY = '4c7579b62fda60d450b8fa952471f5d5'; // this should be stored securely in env variables
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 

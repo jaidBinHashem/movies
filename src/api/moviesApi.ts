@@ -2,30 +2,11 @@ import { AxiosError } from 'axios';
 import { apiClient, getErrorMessage, API_CONFIG } from './client';
 import { Movie } from '../types/Movie';
 import { TMDBMovie, TMDBMovieDetails } from '../types/TMDBTypes';
+import { API } from '../const';
+import { GENRE_MAP, UI_TEXT } from '../const/strings';
 
 const getGenreName = (genreId: number): string => {
-  const genres: { [key: number]: string } = {
-    28: 'Action',
-    12: 'Adventure',
-    16: 'Animation',
-    35: 'Comedy',
-    80: 'Crime',
-    99: 'Documentary',
-    18: 'Drama',
-    10751: 'Family',
-    14: 'Fantasy',
-    36: 'History',
-    27: 'Horror',
-    10402: 'Music',
-    9648: 'Mystery',
-    10749: 'Romance',
-    878: 'Science Fiction',
-    10770: 'TV Movie',
-    53: 'Thriller',
-    10752: 'War',
-    37: 'Western'
-  };
-  return genres[genreId] || 'Unknown';
+  return GENRE_MAP[genreId as keyof typeof GENRE_MAP] || UI_TEXT.UNKNOWN;
 };
 
 const transformMovieData = (movie: TMDBMovie): Movie => ({
@@ -54,13 +35,13 @@ const transformDetailedMovieData = (movie: TMDBMovieDetails): Movie => ({
   poster: movie.poster_path ? `${API_CONFIG.TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '',
   duration: movie.runtime ? `${movie.runtime} min` : 'Unknown',
   language: movie.original_language,
-  country: movie.production_countries?.[0]?.name || 'Unknown',
+  country: movie.production_countries?.[API.firstCountryIndex]?.name || UI_TEXT.UNKNOWN,
   awards: '',
-  actors: movie.credits?.cast?.slice(0, 5).map((actor) => actor.name) || [],
+  actors: movie.credits?.cast?.slice(API.firstCountryIndex, API.maxCastMembers).map((actor) => actor.name) || [],
   imdbRating: movie.vote_average
 });
 
-export const fetchPopularMovies = async (page: number = 1): Promise<{ movies: Movie[]; totalPages: number; currentPage: number }> => {
+export const fetchPopularMovies = async (page: number = API.defaultPage): Promise<{ movies: Movie[]; totalPages: number; currentPage: number }> => {
   try {
     const response = await apiClient.get('/movie/popular', {
       params: {
@@ -95,7 +76,7 @@ export const fetchMovieById = async (id: number): Promise<Movie> => {
   }
 };
 
-export const searchMovies = async (query: string, page: number = 1): Promise<{ movies: Movie[]; totalPages: number; currentPage: number }> => {
+export const searchMovies = async (query: string, page: number = API.defaultPage): Promise<{ movies: Movie[]; totalPages: number; currentPage: number }> => {
   try {
     const response = await apiClient.get('/search/movie', {
       params: {

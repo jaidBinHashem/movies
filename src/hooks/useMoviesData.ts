@@ -1,8 +1,11 @@
+import { Alert } from 'react-native';
+import { useEffect, useCallback, useState } from 'react';
 import { useMoviesStore } from '../store/moviesStore';
+import { UI_TEXT } from '../const/strings';
 
 /**
- * Custom hook to extract movies store state
- * @returns Object containing all the movie store state values
+ * Custom hook for movies data management including state and actions
+ * @returns Object containing movies state and action handlers
  */
 export const useMoviesData = () => {
   const movies = useMoviesStore(state => state.searchedMovies);
@@ -12,6 +15,43 @@ export const useMoviesData = () => {
   const hasMoreMovies = useMoviesStore(state => state.hasMoreMovies);
   const isSearching = useMoviesStore(state => state.isSearching);
   const searchQuery = useMoviesStore(state => state.searchQuery);
+  const clearError = useMoviesStore(state => state.clearError);
+  const fetchMovies = useMoviesStore(state => state.fetchMovies);
+  const searchMovies = useMoviesStore(state => state.searchMovies);
+  const loadMoreMovies = useMoviesStore(state => state.loadMoreMovies);
+  
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Initial fetch of movies
+  useEffect(() => {
+    fetchMovies();
+  }, [fetchMovies]);
+
+  // Handle error display
+  useEffect(() => {
+    if (error) {
+      Alert.alert(UI_TEXT.ERROR_TITLE, error, [{ text: UI_TEXT.OK, onPress: clearError }]);
+    }
+  }, [error, clearError]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (searchQuery?.trim()) {
+        await searchMovies(searchQuery);
+      } else {
+        await fetchMovies();
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchMovies, searchMovies, searchQuery]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMoreMovies) {
+      loadMoreMovies();
+    }
+  }, [loadingMore, hasMoreMovies, loadMoreMovies]);
 
   return {
     movies,
@@ -21,5 +61,8 @@ export const useMoviesData = () => {
     hasMoreMovies,
     isSearching,
     searchQuery,
+    handleRefresh,
+    handleLoadMore,
+    refreshing,
   };
 };

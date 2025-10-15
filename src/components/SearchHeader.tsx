@@ -24,6 +24,8 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { useDebounce } from '../hooks/useDebounce';
+import { SEARCH, ANIMATION } from '../const';
+import { UI_TEXT } from '../const/strings';
 import { COLORS } from '../const/colors';
 import { useMoviesStore } from '../store/moviesStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,7 +47,7 @@ const SearchHeader = memo(
     const isSearching = useMoviesStore(state => state.isSearching);
     const searchMovies = useMoviesStore(state => state.searchMovies);
 
-    const debouncedSearchQuery = useDebounce(searchQuery, 500);
+    const debouncedSearchQuery = useDebounce(searchQuery, SEARCH.debounceDelay);
 
     const searchMoviesRef = useRef(searchMovies);
     searchMoviesRef.current = searchMovies;
@@ -59,21 +61,21 @@ const SearchHeader = memo(
     }, [debouncedSearchQuery, flatListRef]);
 
     useEffect(() => {
-      const shouldShow = searchQuery.length > 0 && !isSearching && searchQuery === debouncedSearchQuery;
-      clearButtonOpacity.value = withTiming(shouldShow ? 1 : 0, { duration: 200 });
+      const shouldShow = searchQuery.length > SEARCH.minQueryLength && !isSearching && searchQuery === debouncedSearchQuery;
+      clearButtonOpacity.value = withTiming(shouldShow ? ANIMATION.visible : ANIMATION.hidden, { duration: ANIMATION.normal });
     }, [isSearching, searchQuery.length, clearButtonOpacity, searchQuery, debouncedSearchQuery]);
 
     const handleTextChange = useCallback(
       (text: string) => {
         setSearchQuery(text);
-        clearButtonOpacity.value = withTiming(0, { duration: 200 });
+        clearButtonOpacity.value = withTiming(ANIMATION.hidden, { duration: ANIMATION.normal });
       },
       [clearButtonOpacity],
     );
 
     const handleClearSearch = useCallback(() => {
       setSearchQuery('');
-      clearButtonOpacity.value = withTiming(0, { duration: 200 });
+      clearButtonOpacity.value = withTiming(ANIMATION.hidden, { duration: ANIMATION.normal });
       if (flatListRef?.current) {
         flatListRef.current.scrollToOffset?.({ offset: 0, animated: true });
       }
@@ -90,7 +92,7 @@ const SearchHeader = memo(
       opacity: clearButtonOpacity.value,
       transform: [
         {
-          scale: interpolate(clearButtonOpacity.value, [0, 1], [0.8, 1]),
+          scale: interpolate(clearButtonOpacity.value, [ANIMATION.hidden, ANIMATION.visible], [ANIMATION.scalePressed, ANIMATION.scaleNormal]),
         },
       ],
     }));
@@ -110,8 +112,8 @@ const SearchHeader = memo(
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search movies by title..."
-            placeholderTextColor="#999"
+            placeholder={UI_TEXT.SEARCH_PLACEHOLDER}
+            placeholderTextColor={COLORS.placeholder}
             value={searchQuery}
             onChangeText={handleTextChange}
             returnKeyType="search"
@@ -126,7 +128,7 @@ const SearchHeader = memo(
             <TouchableOpacity
               onPress={handleClearSearch}
               style={styles.clearButton}
-              activeOpacity={0.7}
+              activeOpacity={ANIMATION.pressed}
             >
               <Text style={styles.clearButtonText}>×</Text>
             </TouchableOpacity>
@@ -149,14 +151,14 @@ SearchHeader.displayName = 'SearchHeader';
 const styles = StyleSheet.create({
   header: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: COLORS.outline,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.onBackground,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -166,13 +168,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchInput: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: COLORS.surfaceVariant,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: COLORS.outline,
     flex: 1,
   },
   searchIndicator: {
@@ -191,13 +193,13 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ccc',
+    backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   clearButtonText: {
     fontSize: 16,
-    color: '#fff',
+    color: COLORS.onPrimary,
     fontWeight: 'bold',
     lineHeight: 16,
   },
